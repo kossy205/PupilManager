@@ -22,18 +22,21 @@ class MainViewModel @Inject constructor(val mainRepo: MainRepository): ViewModel
 
     private val _pupilsList = MutableStateFlow<GetPupilState<List<Pupil>>>(GetPupilState.Idle)
     val pupilsList: StateFlow<GetPupilState<List<Pupil>>> = _pupilsList
+    // toast event for pupils list
+    private val _toastEventPL = MutableStateFlow<String>("")
+    val toastEventPL: StateFlow<String> = _toastEventPL
 
     private val _pupilById = MutableStateFlow<GetPupilByIdState<Pupil>>(GetPupilByIdState.Idle)
     val pupilById: StateFlow<GetPupilByIdState<Pupil>> = _pupilById
+    // toast event for a single pupil
+    private val _toastEventP = MutableStateFlow<String>("")
+    val toastEventP: StateFlow<String> = _toastEventP
 
     private val _deletePupil = MutableStateFlow<DeletePupilState<Unit>>(DeletePupilState.Idle)
     val deletePupil: StateFlow<DeletePupilState<Unit>> = _deletePupil
 
     private val _pagination = MutableStateFlow<PaginationState<Pagination>>(PaginationState.Idle)
     val pagination: StateFlow<PaginationState<Pagination>> = _pagination
-    // toast event for pupils list
-    private val _toastEventPL = MutableStateFlow<String>("")
-    val toastEventPL: StateFlow<String> = _toastEventPL
 
     init {
         getPupils(1)
@@ -79,16 +82,21 @@ class MainViewModel @Inject constructor(val mainRepo: MainRepository): ViewModel
     fun getPupilById(pupilId: Int) {
         viewModelScope.launch {
             val pupil = mainRepo.getPupilById(pupilId)
+            Log.i("pupil details vm", "pupil: ${pupil}")
             when (pupil) {
                 is PupilsDbResponse.Success -> {
                     _pupilById.value = GetPupilByIdState.Success(pupil.data)
                 }
                 is PupilsDbResponse.Error -> {
-                    _pupilById.value = GetPupilByIdState.Error(pupil.message)
+                    _toastEventP.value = pupil.message
                 }
                 else -> {}
             }
         }
+    }
+
+    fun createPupil(pupil: Pupil) {
+
     }
 
     fun deletePupil(pupilId: Int) {

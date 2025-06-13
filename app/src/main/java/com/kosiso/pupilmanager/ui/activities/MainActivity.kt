@@ -14,6 +14,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.kosiso.pupilmanager.ui.screens.AddPupilScreen
 import com.kosiso.pupilmanager.ui.screens.EditPupilScreen
+import com.kosiso.pupilmanager.ui.screens.PupilDetailsScreen
 import com.kosiso.pupilmanager.ui.screens.PupilsScreen
 import com.kosiso.pupilmanager.ui.viewmodels.MainViewModel
 import com.kosiso.sfinventory.utils.enum_classes.RootNav
@@ -48,8 +49,24 @@ fun RootNavigation(rootNavController: NavHostController, mainViewModel: MainView
                 onNavigateToAddPupilScreen = {
                     rootNavController.navigate(RootNav.ADD_PUPIL.route)
                 },
-                onNavigateToPupilDetailsScreen = { pupil->
-                    rootNavController.navigate("${RootNav.EDIT_PUPIL.route}/${pupil.pupilId}")
+                onNavigateToPupilDetailsScreen = { pupilId->
+                    rootNavController.navigate("${RootNav.PUPIL_DETAILS.route}/${pupilId}")
+                }
+            )
+        }
+        composable(
+            route = "${RootNav.PUPIL_DETAILS.route}/{pupilId}",
+            arguments = listOf(navArgument("pupilId") { type = NavType.IntType })
+            ) {backStackEntry ->
+            val pupilId = backStackEntry.arguments?.getInt("pupilId")
+            PupilDetailsScreen (
+                pupilId = pupilId!!,
+                mainViewModel = mainViewModel,
+                onBackClick = {
+                    rootNavController.popBackStack()
+                },
+                onNavigateToEditPupilScreen = { pupilId->
+                    rootNavController.navigate("${RootNav.EDIT_PUPIL.route}/${pupilId}")
                 }
             )
         }

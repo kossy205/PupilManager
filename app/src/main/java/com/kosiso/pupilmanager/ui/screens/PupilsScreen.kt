@@ -67,7 +67,7 @@ import com.kosiso.pupilmanager.ui.screen_states.GetPupilState
 @Composable
 fun PupilsScreen(
     mainViewModel: MainViewModel,
-    onNavigateToPupilDetailsScreen: (Pupil) -> Unit,
+    onNavigateToPupilDetailsScreen: (Int) -> Unit,
     onNavigateToAddPupilScreen: () -> Unit){
 
     val context = LocalContext.current
@@ -109,7 +109,8 @@ fun PupilsScreen(
 
             PupilListSection(
                 mainViewModel,
-                onNavigateToPupilDetailsScreen)
+                onNavigateToPupilDetailsScreen
+            )
 
         }
 
@@ -134,7 +135,7 @@ fun PupilsScreen(
 @Composable
 private fun PupilListSection(
     mainViewModel: MainViewModel,
-    onNavigateToPupilDetailsScreen: (Pupil) -> Unit
+    onNavigateToPupilDetailsScreen: (Int) -> Unit
 ){
 
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -185,7 +186,7 @@ private fun PupilListSection(
                                     Box(
                                         modifier = Modifier
                                             .clickable{
-                                                onNavigateToPupilDetailsScreen(pupil)
+                                                onNavigateToPupilDetailsScreen(pupil.pupilId)
                                             }
                                     ) {
                                         PupilItem(pupil)
@@ -432,7 +433,7 @@ private fun ShowProgressBar(){
         CircularProgressIndicator(
             modifier = Modifier
                 .size(10.dp),
-            color = Black,
+            color = White,
             strokeCap = StrokeCap.Round,
             strokeWidth = 1.dp
         )

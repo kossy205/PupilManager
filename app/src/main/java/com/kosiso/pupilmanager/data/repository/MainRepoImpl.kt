@@ -11,7 +11,6 @@ import com.kosiso.pupilmanager.data.models.PupilResponse
 import com.kosiso.pupilmanager.data.remote.PupilApi
 import com.kosiso.pupilmanager.utils.NetworkUtils
 import com.kosiso.pupilmanager.utils.PupilsDbResponse
-import com.kosiso.pupilmanager.utils.PupilsDbResponse.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
@@ -55,10 +54,10 @@ class MainRepoImpl @Inject constructor(
             }
             is PupilsDbResponse.Error -> {
                 // emits a state to signal API failure for toast
-                emit(Error(result.message, result.code))
+                emit(PupilsDbResponse.Error(result.message, result.code))
             }
             is PupilsDbResponse.Loading -> {
-                emit(Loading)
+                emit(PupilsDbResponse.Loading)
             }
             else -> {}
         }
@@ -108,13 +107,19 @@ class MainRepoImpl @Inject constructor(
         return withContext(Dispatchers.IO) {
             // pupil for room
             val result = getPupilByIdFromLocalDb(pupilId)
+            Log.i("pupil details repo", "pupil: $result")
             when {
-                result.isSuccess -> PupilsDbResponse.Success(result.getOrThrow())
-                result.isFailure -> PupilsDbResponse.Error(result.exceptionOrNull()?.message ?: "Unknown error")
+                result.isSuccess -> {
+                    Log.i("pupil details repo success", "pupil: ${result}")
+                    PupilsDbResponse.Success(result.getOrThrow())
+                }
+                result.isFailure -> {
+                    // pupil from api
+                    getPupilByIdFromServer(pupilId)
+                    PupilsDbResponse.Error(result.exceptionOrNull()?.message ?: "Unknown error")
+                }
                 else -> PupilsDbResponse.Error("Unexpected result")
             }
-            // pupil from api
-            getPupilByIdFromServer(pupilId)
         }
     }
 
@@ -123,7 +128,6 @@ class MainRepoImpl @Inject constructor(
             val response = pupilApi.getPupilById(pupilId)
             if (response.isSuccessful) {
                 val pupil = response.body()
-                Result.success(pupil)
                 if (pupil != null) {
                     Log.i("Pupil by id", "Pupil fetched successfully: $pupil")
                     PupilsDbResponse.Success(pupil)
