@@ -29,4 +29,5 @@ class ApiResponseHelper @Inject constructor() {
             PupilsDbResponse.Error("Unexpected error: ${e.message ?: "Unknown error"}")
         }
     }
+
 }

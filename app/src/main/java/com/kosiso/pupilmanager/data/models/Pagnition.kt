@@ -5,8 +5,8 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "pagination")
 data class Pagination(
-    @PrimaryKey val id: Int = 1,
-    val pageNumber: Int,
+    @PrimaryKey
+    val pageNumber: Int = 1,
     val totalPages: Int,
     val itemCount: Int
 )

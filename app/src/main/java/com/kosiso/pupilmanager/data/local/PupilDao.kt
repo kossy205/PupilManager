@@ -21,7 +21,7 @@ interface PupilDao {
     suspend fun updatePupil(pupil: Pupil)
 
     @Query("SELECT * FROM pupils_table WHERE pupilId = :pupilId")
-    suspend fun getPupilById(pupilId: String): Pupil
+    suspend fun getPupilById(pupilId: Int): Pupil
 
     @Query("SELECT * FROM pupils_table WHERE pageNumber = :page")
     fun getPupilsByPage(page: Int): Flow<List<Pupil>>
@@ -30,5 +30,5 @@ interface PupilDao {
     fun getAllPupils(): Flow<List<Pupil>>
 
     @Query("DELETE FROM pupils_table WHERE pupilId = :pupilId")
-    suspend fun deletePupilById(pupilId: String)
+    suspend fun deletePupilById(pupilId: Int)
 }

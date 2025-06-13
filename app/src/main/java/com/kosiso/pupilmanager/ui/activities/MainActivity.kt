@@ -48,7 +48,7 @@ fun RootNavigation(rootNavController: NavHostController, mainViewModel: MainView
                 onNavigateToAddPupilScreen = {
                     rootNavController.navigate(RootNav.ADD_PUPIL.route)
                 },
-                onNavigateToEditPupilScreen = {pupil->
+                onNavigateToPupilDetailsScreen = { pupil->
                     rootNavController.navigate("${RootNav.EDIT_PUPIL.route}/${pupil.pupilId}")
                 }
             )
