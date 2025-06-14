@@ -8,7 +8,7 @@ import com.kosiso.pupilmanager.data.models.Pupil
 
 @Database(
     entities = [Pupil::class, Pagination::class],
-    version = 11
+    version = 12
 )
 abstract class RoomDatabase: RoomDatabase() {
 

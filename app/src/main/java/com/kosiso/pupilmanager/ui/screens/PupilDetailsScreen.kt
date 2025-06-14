@@ -212,7 +212,7 @@ private fun PupilDetailsSection(pupil: Pupil){
         ){
 
             Image(
-                painter = painterResource(id = R.drawable.ic_launcher_background),
+                painter = painterResource(id = R.drawable.ic_pupil),
                 contentDescription = "Pupil Image",
                 modifier = Modifier
                 .size(150.dp)

@@ -1,5 +1,8 @@
 package com.kosiso.pupilmanager.ui.screens
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.util.Base64
 import com.kosiso.pupilmanager.R
 import android.util.Log
 import android.widget.Toast
@@ -22,6 +25,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -47,6 +51,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -63,6 +69,9 @@ import com.kosiso.pupilmanager.ui.viewmodels.MainViewModel
 import com.kosiso.pupilmanager.utils.NetworkUtils
 import com.kosiso.pupilmanager.utils.PaginationState
 import com.kosiso.pupilmanager.ui.screen_states.GetPupilState
+import com.kosiso.pupilmanager.ui.screen_states.ImageState
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun PupilsScreen(
@@ -350,12 +359,13 @@ private fun PupilItem(pupil: Pupil){
             contentAlignment = Alignment.Center
         ){
             Image(
-                painter = painterResource(id = R.drawable.ic_launcher_background),
+                painter = painterResource(id = R.drawable.ic_pupil),
                 contentDescription = "Product Image",
                 modifier = Modifier
                     .size(65.dp)
                     .clip(RoundedCornerShape(12.dp))
             )
+
         }
 
         Box(

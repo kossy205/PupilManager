@@ -113,8 +113,12 @@ dependencies {
     implementation (libs.retrofit)
     implementation (libs.converter.gson)
 
-
     // google maps
-    implementation ("com.google.maps.android:maps-compose:6.2.0")
-    implementation ("com.google.android.gms:play-services-maps:19.0.0")
+    implementation (libs.maps.compose)
+    implementation (libs.play.services.maps)
+
+    // For AsyncImage
+    implementation (libs.coil.compose)
+
+    implementation (libs.androidx.work.runtime.ktx)
 }

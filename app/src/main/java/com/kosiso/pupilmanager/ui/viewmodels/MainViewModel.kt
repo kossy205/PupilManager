@@ -6,9 +6,11 @@ import androidx.lifecycle.viewModelScope
 import com.kosiso.pupilmanager.data.models.Pagination
 import com.kosiso.pupilmanager.data.models.Pupil
 import com.kosiso.pupilmanager.data.repository.MainRepository
+import com.kosiso.pupilmanager.ui.screen_states.CreatePupilState
 import com.kosiso.pupilmanager.ui.screen_states.DeletePupilState
 import com.kosiso.pupilmanager.ui.screen_states.GetPupilByIdState
 import com.kosiso.pupilmanager.ui.screen_states.GetPupilState
+import com.kosiso.pupilmanager.ui.screen_states.EditPupilState
 import com.kosiso.pupilmanager.utils.PaginationState
 import com.kosiso.pupilmanager.utils.PupilsDbResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -31,6 +33,18 @@ class MainViewModel @Inject constructor(val mainRepo: MainRepository): ViewModel
     // toast event for a single pupil
     private val _toastEventP = MutableStateFlow<String>("")
     val toastEventP: StateFlow<String> = _toastEventP
+
+    private val _createPupil = MutableStateFlow<CreatePupilState<Unit>>(CreatePupilState.Idle)
+    val createPupil: StateFlow<CreatePupilState<Unit>> = _createPupil
+    // toast event for create pupil
+    private val _toastEventCP = MutableStateFlow<String>("")
+    val toastEventCP: StateFlow<String> = _toastEventCP
+
+    private val _editPupil = MutableStateFlow<EditPupilState<Unit>>(EditPupilState.Idle)
+    val editPupil: StateFlow<EditPupilState<Unit>> = _editPupil
+    // toast event for edit pupil or update pupil
+    private val _toastEventEP = MutableStateFlow<String>("")
+    val toastEventEP: StateFlow<String> = _toastEventEP
 
     private val _deletePupil = MutableStateFlow<DeletePupilState<Unit>>(DeletePupilState.Idle)
     val deletePupil: StateFlow<DeletePupilState<Unit>> = _deletePupil
@@ -96,7 +110,46 @@ class MainViewModel @Inject constructor(val mainRepo: MainRepository): ViewModel
     }
 
     fun createPupil(pupil: Pupil) {
+        viewModelScope.launch {
+            val pupil = mainRepo.createPupil(pupil)
+            Log.i("create pupil vm", "pupil: ${pupil}")
+            when (pupil) {
+                is PupilsDbResponse.Success -> {
+                    _createPupil.value = CreatePupilState.Success(Unit)
+                    /**
+                     * if u create a pupil, it doesnt get added to local db, meaning u wont see it unless online.
+                     * remember it uses page numbers, and the server is the one responsible for that.
+                     * cant just assign any page number to it. Thats the servers job
+                     */
+                    getPupils(1)
+                    _toastEventCP.value = "pupil created successfully"
+                }
+                is PupilsDbResponse.Error -> {
+                    _toastEventCP.value = pupil.message
+                }
+                else -> {}
+            }
+        }
+    }
 
+    fun updatePupil(pupilId: Int, pupil: Pupil) {
+        viewModelScope.launch {
+            val currentPage = pupil.pageNumber
+
+            val pupil = mainRepo.updatePupil(pupilId, pupil)
+            Log.i("update pupil vm", "pupil: ${pupil}")
+            when (pupil) {
+                is PupilsDbResponse.Success -> {
+                    _editPupil.value = EditPupilState.Success(Unit)
+                    getPupils(currentPage)
+                    _toastEventEP.value = "pupil updated successfully"
+                }
+                is PupilsDbResponse.Error -> {
+                    _toastEventEP.value = pupil.message
+                }
+                else -> {}
+            }
+        }
     }
 
     fun deletePupil(pupilId: Int) {

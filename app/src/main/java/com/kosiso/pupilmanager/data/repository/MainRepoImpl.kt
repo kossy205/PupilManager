@@ -9,6 +9,7 @@ import com.kosiso.pupilmanager.data.models.Pagination
 import com.kosiso.pupilmanager.data.models.Pupil
 import com.kosiso.pupilmanager.data.models.PupilResponse
 import com.kosiso.pupilmanager.data.remote.PupilApi
+import com.kosiso.pupilmanager.ui.screens.PupilsScreen
 import com.kosiso.pupilmanager.utils.NetworkUtils
 import com.kosiso.pupilmanager.utils.PupilsDbResponse
 import kotlinx.coroutines.Dispatchers
@@ -87,6 +88,8 @@ class MainRepoImpl @Inject constructor(
         }
     }
 
+
+
     override suspend fun insertPupilList(list: List<Pupil>, pagination: Pagination): Result<Unit> {
         return try {
             val updatedPupils = list.map { pupil ->
@@ -103,9 +106,11 @@ class MainRepoImpl @Inject constructor(
         }
     }
 
+
+
     override suspend fun getPupilById(pupilId: Int): PupilsDbResponse<Pupil> {
         return withContext(Dispatchers.IO) {
-            // pupil for room
+            // pupil from room
             val result = getPupilByIdFromLocalDb(pupilId)
             Log.i("pupil details repo", "pupil: $result")
             when {
@@ -114,8 +119,12 @@ class MainRepoImpl @Inject constructor(
                     PupilsDbResponse.Success(result.getOrThrow())
                 }
                 result.isFailure -> {
+                    // Don't fetch from api, because the Pupil data class has "pageNumber" in it, ...
+                    // ...which is part of the roomdb but isn't part of the pupil from server.
+                    // If u a single pupil by id from server, it would be impossible to access "pageNumber".
+                    // This might cause a crash or some bugs later
                     // pupil from api
-                    getPupilByIdFromServer(pupilId)
+//                    getPupilByIdFromServer(pupilId)
                     PupilsDbResponse.Error(result.exceptionOrNull()?.message ?: "Unknown error")
                 }
                 else -> PupilsDbResponse.Error("Unexpected result")
@@ -152,6 +161,116 @@ class MainRepoImpl @Inject constructor(
             }
         }
     }
+
+
+
+    override suspend fun createPupil(pupil: Pupil): PupilsDbResponse<Unit> {
+        return withContext(Dispatchers.IO) {
+            // insert into room
+            val result = insertPupil(pupil)
+            Log.i("create pupil repo", "$result")
+            when {
+                result.isSuccess -> {
+                    Log.i("create pupil repo success", "${result}")
+                    // create in serve
+                    createPupilInServer(pupil)
+                    PupilsDbResponse.Success(result.getOrThrow())
+                }
+                result.isFailure -> {
+                    // create in serve
+                    createPupilInServer(pupil)
+                    PupilsDbResponse.Error(result.exceptionOrNull()?.message ?: "Unknown error")
+                }
+                else -> PupilsDbResponse.Error("Unexpected result")
+            }
+        }
+    }
+
+    override suspend fun createPupilInServer(pupil: Pupil): PupilsDbResponse<Unit> {
+        return withContext(Dispatchers.IO) {
+            try {
+                apiResponseHelper.safeApiCall {
+                    val response = pupilApi.createPupil(pupil)
+                    if (response.isSuccessful) {
+                        val body = response.body()
+                        Log.i("create pupil", "$body")
+                        PupilsDbResponse.Success(Unit)
+                    } else {
+                        val errorMessage = response.errorBody()?.string() ?: "can't create now, try again"
+                        PupilsDbResponse.Error(errorMessage)
+                    }
+                }
+            }catch (e: Exception){
+                PupilsDbResponse.Error(e.message.toString())
+            }
+        }
+    }
+
+    override suspend fun insertPupil(pupil: Pupil): Result<Unit> {
+        return try {
+            pupilDao.insertPupil(pupil)
+            Result.success(Unit)
+        }catch (e: Exception){
+            Result.failure(e)
+        }
+    }
+
+
+
+    override suspend fun updatePupil(pupilId: Int, pupil: Pupil): PupilsDbResponse<Unit> {
+        return withContext(Dispatchers.IO) {
+            // update in room
+            val result = updatePupilInLocalDb(pupil)
+            Log.i("update pupil repo", "$result")
+            when {
+                result.isSuccess -> {
+                    Log.i("update pupil repo success", "${result}")
+                    // update in server
+                    updatePupilInServer(pupilId, pupil)
+                    PupilsDbResponse.Success(result.getOrThrow())
+                }
+                result.isFailure -> {
+                    // update in serve
+                    Log.i("update pupil repo error", "${result}")
+                    updatePupilInServer(pupilId, pupil)
+                    PupilsDbResponse.Error(result.exceptionOrNull()?.message ?: "Unknown error")
+                }
+                else -> PupilsDbResponse.Error("Unexpected result")
+            }
+        }
+    }
+
+    override suspend fun updatePupilInServer(pupilId: Int, pupil: Pupil): PupilsDbResponse<Unit> {
+        return withContext(Dispatchers.IO) {
+            try {
+                apiResponseHelper.safeApiCall {
+                    val response = pupilApi.updatePupil(pupilId, pupil)
+                    if (response.isSuccessful) {
+                        val body = response.body()
+                        Log.i("update pupil", "$body")
+                        PupilsDbResponse.Success(Unit)
+                    } else {
+                        val errorMessage = response.errorBody()?.string() ?: "can't update now, try again"
+                        PupilsDbResponse.Error(errorMessage)
+                    }
+                }
+
+            }catch (e: Exception){
+                PupilsDbResponse.Error(e.message.toString())
+            }
+        }
+    }
+
+    override suspend fun updatePupilInLocalDb(pupil: Pupil): Result<Unit> {
+        return try {
+            pupilDao.updatePupil(pupil)
+            Result.success(Unit)
+        }catch (e: Exception){
+            Result.failure(e)
+        }
+    }
+
+
 
     override suspend fun deletePupil(pupilId: Int): Result<Unit> {
         return withContext(Dispatchers.IO) {

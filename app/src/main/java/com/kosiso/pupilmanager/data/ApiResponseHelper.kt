@@ -23,7 +23,7 @@ class ApiResponseHelper @Inject constructor() {
             )
         } catch (e: IOException) {
             Log.i("IOException error", "IOException error")
-            PupilsDbResponse.Error("Network error: Seems you're offline")
+            PupilsDbResponse.Error("Seems you're offline")
         } catch (e: Exception) {
             Log.i("Exception error", e.message.toString())
             PupilsDbResponse.Error("Unexpected error: ${e.message ?: "Unknown error"}")

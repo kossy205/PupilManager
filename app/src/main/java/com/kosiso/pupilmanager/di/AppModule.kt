@@ -2,6 +2,8 @@ package com.kosiso.pupilmanager.di
 
 import android.content.Context
 import androidx.room.Room
+import androidx.work.WorkManager
+import com.google.gson.Gson
 import com.kosiso.pupilmanager.data.ApiResponseHelper
 import com.kosiso.pupilmanager.data.local.PaginationDao
 import com.kosiso.pupilmanager.data.local.PupilDao
@@ -81,6 +83,18 @@ object AppModule {
     fun provideContext(@ApplicationContext context: Context): Context {
         return context
     }
+
+//    @Provides
+//    @Singleton
+//    fun provideWorkManager(@ApplicationContext context: Context): WorkManager {
+//        return WorkManager.getInstance(context)
+//    }
+//
+//    @Provides
+//    @Singleton
+//    fun provideGson(): Gson {
+//        return Gson()
+//    }
 
     @Singleton
     @Provides
